@@ -1,0 +1,30 @@
+name: Compile Lecture Notes
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install TeX Live and Tufte Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y texlive-latex-extra texlive-fonts-recommended texlive-fonts-extra texlive-science latexmk
+
+      - name: Compile Tufte Handouts
+        run: |
+          # Finds all .tex files recursively and compiles them via latexmk
+          find . -name "*.tex" -exec sh -c 'cd "$(dirname "{}")" && latexmk -pdf -interaction=nonstopmode "$(basename "{}")"' \;
+
+      - name: Upload PDF Artifacts
+        uses: actions/artifacts@v4
+        with:
+          name: ece486_ece687_spring2026_course_notes
+          path: "**/*.pdf"
